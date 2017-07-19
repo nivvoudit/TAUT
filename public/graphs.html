@@ -1,0 +1,93 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+<meta charset="utf-8">
+<script src="https://www.gstatic.com/firebasejs/4.1.3/firebase.js"></script>
+<script>
+var config = ({
+  apiKey: "AIzaSyBc7gz0t5j8Su-Rir7AiYyJ4iN1vBSqr9c ",                             // Auth / General Use
+  authDomain: "taut-d4c59.firebaseapp.com",         // Auth with popup/
+  databaseURL: "https://taut-d4c59.firebaseio.com/" // Realtime Database
+});
+firebase.initializeApp(config);
+</script>
+	
+	<title>CanvasJS Example</title>
+</head>
+
+<body>
+	<div id="chartContainer" style="height: 400px; width: 100%;"></div>
+	<div id="ratingContainer" style="height: 100px; width: 100%;">
+			<input value="1" type="radio" id="input-one" name="self-assessment">
+			<input value="2" type="radio" id="input-two" name="self-assessment">	
+			<input value="3" type="radio" id="input-three" name="self-assessment">
+			<input value="4" type="radio" id="input-four" name="self-assessment">
+			<input value="5" type="radio" id="input-five" name="self-assessment">
+			<button class="submit">
+	</div>
+	<script>
+	const date = new Date(),
+     dateString = date.toString(),
+     database = firebase.database(),
+	 saSub = document.querySelector('button.submit');
+
+	let url = new URL(window.location.href),
+	 searchParams = new URLSearchParams(url.search),
+	 dbDate = searchParams.get('date'),
+	 dbItem = searchParams.get('lesson'),
+	 yVal1 = 0,
+	 yVal2 = 0,
+	 yVal3 = 0,
+	 yVal4 = 0,
+	 yVal5 = 0;
+
+	saSub.addEventListener('click', function(e){
+		var sa = document.querySelector('input[name="self-assessment"]:checked');
+	  	var updates = {};
+	  	database.ref(dbDate + '/' + dbItem + '/' + sa.value).once('value').then(function(snapshot) {
+		  		updates[dbDate + '/' + dbItem + '/' + sa.value] = parseInt(snapshot.val() + 1);
+	  			database.ref().update(updates);
+	  			if (sa.value == 1) {
+	  				yVal1 = parseInt(snapshot.val() + 1);
+	  			} else if (sa.value == 2) {
+	  				yVal2 = parseInt(snapshot.val() + 1);
+	  			} else if (sa.value == 3) {
+	  				yVal3 = parseInt(snapshot.val() + 1);
+	  			} else if (sa.value == 4) {
+	  				yVal4 = parseInt(snapshot.val() + 1);
+	  			} else if (sa.value == 5) {
+	  				yVal5 = parseInt(snapshot.val() + 1);
+	  			}
+	  			theChart();
+		});
+	});
+
+	function theChart() {
+		var chart = new CanvasJS.Chart("chartContainer", {
+			title: {
+				text: "Class Self-Assessment of " + dbItem + " Lesson"
+			},
+			axisX: {
+				interval: 1
+			},
+			dataPointWidth: 60,
+			data: [{
+				type: "column",
+				indexLabelLineThickness: 2,
+				dataPoints: [
+					  { x: 1, y: yVal1 },
+					  { x: 2, y: yVal2 },
+					  { x: 3, y: yVal3 },
+					  { x: 4, y: yVal4 },
+					  { x: 5, y: yVal5 }
+				]
+			}]
+		});
+		chart.render();
+	};
+	window.onload = theChart;
+	</script>
+	<script src="./dist/js/canvasjs.min.js"></script>
+</body>
+
+</html>
